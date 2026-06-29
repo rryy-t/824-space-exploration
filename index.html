@@ -1,372 +1,99 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🚀 [수행평가 완결형] 우주 탐사 시뮬레이터</title>
+  <title>🚀 우주 탐사 시뮬레이터</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <style>
-    :root {
-      --bg-color: #0b0f19;
-      --card-bg: #161b26;
-      --text-color: #f3f4f6;
-      --accent-color: #3b82f6;
-      --accent-success: #10b981;
-      --border-color: #374151;
-    }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      max-width: 800px;
-      width: 100%;
-      background: var(--card-bg);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      border: 1px solid var(--border-color);
-    }
-    h1 {
-      text-align: center;
-      color: #ffffff;
-      font-size: 1.8rem;
-      margin-bottom: 30px;
-      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    }
-    h2 {
-      font-size: 1.2rem;
-      border-left: 4px solid var(--accent-color);
-      padding-left: 10px;
-      margin-top: 25px;
-      margin-bottom: 15px;
-    }
-    .input-group {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 15px;
-      margin-bottom: 12px;
-      align-items: center;
-    }
-    label {
-      font-size: 0.95rem;
-      color: #cbd5e1;
-    }
-    input[type="number"], input[type="text"] {
-      background: #1f2937;
-      border: 1px solid var(--border-color);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--accent-color);
-    }
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: var(--accent-color);
-      border: none;
-      color: white;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: background 0.2s;
-    }
-    .btn:hover {
-      background: #2563eb;
-    }
-    .btn-add {
-      background: #4b5563;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      margin-top: 5px;
-      width: auto;
-    }
-    .btn-add:hover {
-      background: #374151;
-    }
-    .result-box {
-      margin-top: 30px;
-      padding: 20px;
-      background: #1f2937;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      display: none;
-    }
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .summary-card {
-      background: #111827;
-      padding: 15px;
-      border-radius: 6px;
-      border: 1px solid #374151;
-    }
-    .summary-card .value {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: var(--accent-success);
-      margin-top: 5px;
-    }
-    .summary-card .value.used {
-      color: #f59e0b;
-    }
-    .detail-item {
-      background: #111827;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      border-left: 3px solid var(--accent-color);
-    }
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 0.95rem;
-    }
-    .detail-eval {
-      font-size: 0.85rem;
-      color: #9ca3af;
-      line-height: 1.4;
-    }
-    .custom-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 15px;
-      margin-bottom: 10px;
-    }
+    body { background-color: #0b0d17; color: white; font-family: 'Pretendard', sans-serif; padding: 15px; }
+    .main-container { max-width: 850px; margin: auto; background: #1a1d2b; padding: 30px; border-radius: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+    .budget-header { position: sticky; top: 10px; background: #252a3d; padding: 20px; border-radius: 15px; border: 1px solid #3f51b5; z-index: 100; margin-bottom: 25px; }
+    .item-card { background: #2c3248; border: 1px solid #3e445b; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+    .input-group-text { background: #1a1d2b; color: #7882a1; border: none; }
+    .form-control { background: #0b0d17; color: white; border: 1px solid #3e445b; }
+    .form-control:focus { border-color: #3f51b5; box-shadow: none; color: white; background: #0b0d17; }
+    .discussion-card { background: #252a3d; border-left: 6px solid #00d2ff; padding: 20px; margin: 30px 0; }
+    .report-sheet { display: none; background: white; color: black; padding: 50px; border-radius: 0; min-height: 100vh; }
+    @media print { .no-print { display: none; } .report-sheet { display: block; } }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>🚀 [수행평가 완결형] 우주 탐사 시뮬레이터</h1>
+<div id="appBody" class="main-container no-print">
+  <h3 class="text-center fw-bold mb-4">🛸 우주 탐사 예산 위원회 시뮬레이션</h3>
 
-  <h2>1. 국가 기본 연구 과제 투자 (억원)</h2>
-  <div id="base-items-container">
-    <div class="input-group">
-      <label>태양광 전지 연구</label>
-      <input type="number" class="base-input" data-name="태양광 전지 연구" placeholder="0" min="0">
+  <div class="budget-header d-flex justify-content-between align-items-center">
+    <div class="flex-grow-1 me-3">
+      <h6 class="mb-1 text-info">남은 예산: <span id="remainVal">100</span>억 원</h6>
+      <div class="progress" style="height: 10px; background: #111;">
+        <div id="progressBar" class="progress-bar bg-info" style="width: 0%"></div>
+      </div>
     </div>
-    <div class="input-group">
-      <label>신소재 안테나 개발</label>
-      <input type="number" class="base-input" data-name="신소재 안테나 개발" placeholder="0" min="0">
-    </div>
-    <div class="input-group">
-      <label>원격 적외선 온도계 투자</label>
-      <input type="number" class="base-input" data-name="원격 적외선 온도계 투자" placeholder="0" min="0">
-    </div>
-    <div class="input-group">
-      <label>로켓 추진체 연료 개량</label>
-      <input type="number" class="base-input" data-name="로켓 추진체 연료 개량" placeholder="0" min="0">
-    </div>
-    <div class="input-group">
-      <label>우주인 생명유지 장치</label>
-      <input type="number" class="base-input" data-name="우주인 생명유지 장치" placeholder="0" min="0">
-    </div>
+    <button type="button" class="btn btn-primary fw-bold px-4" onclick="analyze()">전체 분석 실행</button>
   </div>
 
-  <h2>2. 학생 독창적 제안 과제</h2>
-  <div id="custom-items-container">
+  <form id="mainForm">
+    <h6 class="fw-bold mb-3">📦 정부 지정 필수 투자 분야</h6>
+    <div id="baseList"></div>
+    <script>
+      const items = ["태양광 전지 연구", "신소재 안테나 개발", "원격 적외선 온도계 투자", "로켓 추진체 연료 개량", "우주인 생명유지 장치"];
+      items.forEach(i => {
+        document.getElementById('baseList').innerHTML += `
+          <div class="item-card row align-items-center">
+            <div class="col-7 fw-bold">${i}</div>
+            <div class="col-5">
+              <div class="input-group">
+                <input type="number" class="form-control b-input text-end" name="${i}" oninput="refreshBudget()" min="0">
+                <span class="input-group-text">억 원</span>
+              </div>
+            </div>
+          </div>`;
+      });
+    </script>
+
+    <div class="mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold text-success mb-0">💡 우리 모둠만의 창의적 계획</h6>
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="addCustom()">+ 항목 추가</button>
+      </div>
+      <div id="customArea"></div>
     </div>
-  <button type="button" class="btn btn-add" onclick="addCustomRow()">+ 제안 과제 추가하기</button>
+  </form>
 
-  <button type="button" class="btn" onclick="runSimulation()">우주 탐사 시뮬레이션 가동 🚀</button>
-
-  <div class="result-box" id="result-box">
-    <h2>📊 시뮬레이션 결과 리포트</h2>
-    <div class="summary-grid">
-      <div class="summary-card">
-        <div>총 집행 예산</div>
-        <div class="value used" id="res-used">0억</div>
-      </div>
-      <div class="summary-card">
-        <div>우주 개척 지수</div>
-        <div class="value" id="res-space">0점</div>
-      </div>
-      <div class="summary-card">
-        <div>인류 공헌 지수</div>
-        <div class="value" id="res-life">0점</div>
-      </div>
+  <div id="analysisResult" style="display:none;" class="mt-5">
+    <hr class="border-secondary">
+    <h4 class="text-center text-info fw-bold mb-4">📊 시뮬레이션 데이터 결과</h4>
+    <div class="row text-center mb-4">
+      <div class="col-6"><h5>🪐 우주 성공<br><span id="sTot" class="display-5 fw-bold text-primary">0</span>점</h5></div>
+      <div class="col-6"><h5>🏠 일상 기여<br><span id="lTot" class="display-5 fw-bold text-success">0</span>점</h5></div>
+    </div>
+    <div id="breakdown" class="small mb-4"></div>
+    
+    <div class="discussion-card">
+      <h5 class="fw-bold text-info">🗣️ 토론 주제 1: 가치의 우선순위</h5>
+      <p class="mb-0">"우리 모둠은 '미지의 우주 개척(우주 점수)'과 '현재 인류의 삶 개선(일상 점수)' 중 무엇을 더 우선했나요? 분석 결과에 나타난 점수의 차이를 보고, 우리 모둠의 투자 철학을 친구들과 공유해 보세요."</p>
     </div>
 
-    <h3>🔍 세부 항목 평가 및 피드백</h3>
-    <div id="result-details"></div>
+    <button class="btn btn-warning w-100 py-3 fw-bold fs-5" onclick="finalize()">✅ 최종 의사결정서 작성하기</button>
   </div>
 </div>
 
-<script>
-  // 주관식 입력 폼을 동적으로 추가하는 함수
-  function addCustomRow() {
-    const container = document.getElementById('custom-items-container');
-    const div = document.createElement('div');
-    div.className = 'custom-row';
-    div.innerHTML = `
-      <input type="text" class="custom-name" placeholder="예: 화성 정수 필터 개발, AI 로봇 탐사">
-      <input type="number" class="custom-budget" placeholder="예산(억)" min="0">
-    `;
-    container.appendChild(div);
-  }
+<div id="finalReport" class="report-sheet">
+  <h1 class="text-center mb-5">우주 탐사 예산 최종 의사결정서</h1>
+  <table class="table table-bordered mb-4">
+    <tr><th class="table-light" width="20%">모둠명</th><td id="rptTeam"></td><th class="table-light" width="20%">총 예산 사용</th><td id="rptUsed"></td></tr>
+    <tr><th class="table-light">우주 성공</th><td id="rptSpace"></td><th class="table-light">일상 기여</th><td id="rptLife"></td></tr>
+  </table>
 
-  // 처음에 주관식 입력 한 줄 기본 생성
-  addCustomRow();
+  <h5 class="fw-bold mb-3">1. 세부 예산 배분 및 개별 평가 내역</h5>
+  <table class="table table-sm table-striped mb-4" id="rptTable">
+    <thead class="table-light">
+      <tr><th>투자 항목</th><th>예산</th><th>우주 점수</th><th>일상 점수</th><th>과학적 평가 및 산출 근거</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  // 사용자가 버튼을 눌렀을 때 데이터를 수집하여 계산 함수 호출
-  function runSimulation() {
-    // 1. 기본 항목 데이터 수집
-    const budgetData = {};
-    const baseInputs = document.querySelectorAll('.base-input');
-    baseInputs.forEach(input => {
-      const name = input.getAttribute('data-name');
-      budgetData[name] = Number(input.value) || 0;
-    });
-
-    // 2. 주관식 제안 항목 데이터 수집
-    const customItems = [];
-    const rows = document.querySelectorAll('.custom-row');
-    rows.forEach(row => {
-      const nameElement = row.querySelector('.custom-name');
-      const budgetElement = row.querySelector('.custom-budget');
-      if (nameElement && budgetElement) {
-        const name = nameElement.value;
-        const budget = budgetElement.value;
-        if (name.trim() !== "" && budget > 0) {
-          customItems.push({ name: name, budget: Number(budget) });
-        }
-      }
-    });
-
-    // 3. 비즈니스 로직 실행
-    const result = calculateResult(budgetData, customItems);
-
-    // 4. 결과를 화면에 UI로 반영
-    if (result.success) {
-      document.getElementById('res-used').innerText = result.used + " 억";
-      document.getElementById('res-space').innerText = result.spaceTotal + " 점";
-      document.getElementById('res-life').innerText = result.lifeTotal + " 점";
-
-      const detailsDiv = document.getElementById('result-details');
-      detailsDiv.innerHTML = ""; // 기존 내역 초기화
-
-      result.breakdown.forEach(item => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'detail-item';
-        itemEl.innerHTML = `
-          <div class="detail-header">
-            <span>${item.name} (${item.budget}억 투자)</span>
-            <span>우주 +${item.sP} / 인류 +${item.lP}</span>
-          </div>
-          <div class="detail-eval">💡 ${item.eval}</div>
-        `;
-        detailsDiv.appendChild(itemEl);
-      });
-
-      // 결과 영역 표시
-      document.getElementById('result-box').style.display = 'block';
-      document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
-    }
-  }
-
-  /**
-   * 제공해주신 원본 핵심 연산 로직 (웹 브라우저 환경에 맞게 최적화됨)
-   */
-  function calculateResult(budgetData, customItems) {
-    const baseMeta = {
-      "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
-      "신소재 안테나 개발": { sW: 1.5, lW: 1.5, info: "통신 기술 혁신" },
-      "원격 적외선 온도계 투자": { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
-      "로켓 추진체 연료 개량": { sW: 2.3, lW: 0.4, info: "우주 도달 범위 확장" },
-      "우주인 생명유지 장치": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
-    };
-
-    let details = [];
-    let tSpace = 0, tLife = 0, tUsed = 0;
-
-    // 1. 기본 항목 평가 및 예산 규모별 피드백
-    for (let name in baseMeta) {
-      if (budgetData && budgetData[name]) {
-        let budget = Number(budgetData[name]) || 0;
-        if (budget > 0) {
-          let meta = baseMeta[name];
-          let sP = budget * meta.sW;
-          let lP = budget * meta.lW;
-          tSpace += sP; tLife += lP; tUsed += budget;
-
-          let scaleText = budget > 30 ? "대규모 투자를 통해 혁신적인 변화를 이끌었습니다." : "기초적인 수준의 연구를 지원합니다.";
-          details.push({ 
-            name: name, 
-            budget: budget, 
-            sP: sP.toFixed(1), 
-            lP: lP.toFixed(1), 
-            eval: meta.info + " 분야에 " + scaleText 
-          });
-        }
-      }
-    }
-
-    // 2. 주관식 항목 개별 맞춤 평가 (Keyword & Budget 분석)
-    if (customItems && Array.isArray(customItems)) {
-      customItems.forEach(function(c) {
-        if (!c.name) return;
-        let n = c.name.trim();
-        let b = Number(c.budget) || 0;
-        
-        if (n && b > 0) {
-          let sW = 1.0, lW = 1.0, evalStr = "";
-          
-          if (/(화성|달|행성|우주선|탐사|로켓|광물|망원경)/.test(n)) {
-            sW = 2.5; lW = 0.5;
-            evalStr = "우주의 물리적 한계를 극복하려는 시도입니다. 탐사 성공률에 결정적입니다.";
-          } else if (/(의료|병원|식량|농업|물|정수|재난|구조|필터|치료|생물)/.test(n)) {
-            sW = 0.5; lW = 2.5;
-            evalStr = "인류의 생존과 직결된 기술입니다. 일상 과학 기여도가 매우 높게 평가됩니다.";
-          } else if (/(AI|로봇|반도체|컴퓨터|안전|센서|통신)/.test(n)) {
-            sW = 1.6; lW = 1.6;
-            evalStr = "첨단 공학의 융합입니다. 우주 제어 능력과 일상 산업 경쟁력을 동시에 확보합니다.";
-          } else {
-            evalStr = "새로운 분야에 대한 독창적인 접근입니다. 기술적 파급력을 기대할 수 있습니다.";
-          }
-
-          let sP = b * sW;
-          let lP = b * lW;
-          tSpace += sP; tLife += lP; tUsed += b;
-          details.push({ 
-            name: "[학생 제안] " + n, 
-            budget: b, 
-            sP: sP.toFixed(1), 
-            lP: lP.toFixed(1), 
-            eval: evalStr 
-          });
-        }
-      });
-    }
-
-    return { 
-      success: true, 
-      spaceTotal: Math.round(tSpace), 
-      lifeTotal: Math.round(tLife), 
-      used: tUsed, 
-      breakdown: details 
-    };
-  }
-</script>
-
-</body>
-</html>
+  <h5 class="fw-bold mb-3">2. [토론 주제 1] 우리 모둠의 투자 철학 및 가치관</h5>
+  <p class="mb-4">우리 모둠은 우주 성공률과 일상 기여도 중 무엇을 우선했으며, 왜 그런 결정을 내렸나요?</p>
+  <div style="border: 1px solid #000; min-height: 150px; padding: 15px; margin-bottom: 30px;">
