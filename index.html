@@ -33,7 +33,7 @@
     <button type="button" class="btn btn-primary fw-bold px-4" onclick="analyze()">전체 분석 실행</button>
   </div>
 
-  <form id="mainForm">
+  <form id="mainForm" onsubmit="return false;">
     <h6 class="fw-bold mb-3">📦 정부 지정 필수 투자 분야</h6>
     <div id="baseList"></div>
     <script>
@@ -44,7 +44,7 @@
             <div class="col-7 fw-bold">${i}</div>
             <div class="col-5">
               <div class="input-group">
-                <input type="number" class="form-control b-input text-end" name="${i}" oninput="refreshBudget()" min="0">
+                <input type="number" class="form-control b-input base-input text-end" data-name="${i}" oninput="refreshBudget()" min="0">
                 <span class="input-group-text">억 원</span>
               </div>
             </div>
@@ -97,3 +97,166 @@
   <h5 class="fw-bold mb-3">2. [토론 주제 1] 우리 모둠의 투자 철학 및 가치관</h5>
   <p class="mb-4">우리 모둠은 우주 성공률과 일상 기여도 중 무엇을 우선했으며, 왜 그런 결정을 내렸나요?</p>
   <div style="border: 1px solid #000; min-height: 150px; padding: 15px; margin-bottom: 30px;">
+    <textarea id="discussionText" class="form-control border-0 bg-white text-dark" rows="5" placeholder="토론 내용을 여기에 입력하세요..."></textarea>
+  </div>
+
+  <div class="text-center mt-5 d-flex justify-content-center gap-3">
+    <button class="btn btn-secondary no-print px-4 py-2 fw-bold" onclick="backToEdit()">← 다시 배분하기</button>
+    <button class="btn btn-dark no-print px-5 py-2 fw-bold" onclick="window.print()">🖨️ 보고서 인쇄 및 PDF 저장</button>
+  </div>
+</div>
+
+<script>
+let globalRes = null;
+
+// 항목 추가 기능 정상화 고정
+function addCustom() {
+  let id = Date.now();
+  document.getElementById('customArea').insertAdjacentHTML('beforeend', `
+    <div class="item-card row align-items-center" id="${id}">
+      <div class="col-6"><input type="text" class="form-control custom-n" placeholder="투자 아이디어 입력"></div>
+      <div class="col-5"><div class="input-group"><input type="number" class="form-control b-input custom-b text-end" oninput="refreshBudget()" min="0"><span class="input-group-text">억 원</span></div></div>
+      <div class="col-1"><button type="button" class="btn-close btn-close-white" onclick="document.getElementById('${id}').remove(); refreshBudget();"></button></div>
+    </div>`);
+}
+
+// 기본 항목과 주관식 항목 모두를 안전하게 취합하여 실시간 예산 차감 계산
+function refreshBudget() {
+  let t = 0; 
+  document.querySelectorAll('.b-input').forEach(i => {
+    t += Number(i.value) || 0;
+  });
+  let r = 100 - t;
+  document.getElementById('remainVal').innerText = r;
+  document.getElementById('remainVal').className = r < 0 ? "text-danger fw-bold" : "text-info fw-bold";
+  document.getElementById('progressBar').style.width = Math.min(Math.max(t, 0), 100) + '%';
+}
+
+// 전체 분석 기능 정상화 고정
+function analyze() {
+  let t = 0; 
+  document.querySelectorAll('.b-input').forEach(i => t += Number(i.value) || 0);
+  if(t > 100) return alert("예산을 초과했습니다!");
+  if(t < 100 && !confirm("예산이 남았습니다. 진행하시겠습니까?")) return;
+
+  // 1. 기본 필수 과제 데이터 수집 (data-name 속성 기준)
+  let baseData = {}; 
+  document.querySelectorAll('.base-input').forEach(input => {
+    let name = input.getAttribute('data-name');
+    if (name) baseData[name] = input.value;
+  });
+
+  // 2. 창의적 계획 항목 데이터 수집 (.custom-n, .custom-b 기반)
+  let customItems = []; 
+  document.querySelectorAll('#customArea .item-card').forEach(row => {
+    let n = row.querySelector('.custom-n').value;
+    let b = row.querySelector('.custom-b').value;
+    if(n && b) customItems.push({name: n, budget: b});
+  });
+
+  // 3. 브라우저 로컬 데이터 수식 연산 작동
+  let res = calculateResult(baseData, customItems);
+  
+  globalRes = res;
+  document.getElementById('analysisResult').style.display = 'block';
+  document.getElementById('sTot').innerText = res.spaceTotal;
+  document.getElementById('lTot').innerText = res.lifeTotal;
+  
+  let html = "";
+  res.breakdown.forEach(d => {
+    html += `<div class='border-bottom border-secondary py-2'><strong>${d.name} (${d.budget}억)</strong><br><small class='text-white-50'>${d.eval}</small> <br>
+             <span class='text-primary'>우주 +${d.sP}</span> / <span class='text-success'>일상 +${d.lP}</span></div>`;
+  });
+  document.getElementById('breakdown').innerHTML = html;
+  
+  setTimeout(() => {
+    document.getElementById('analysisResult').scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+function finalize() {
+  let team = prompt("모둠명을 입력하세요:");
+  if(!team) return;
+  document.getElementById('rptTeam').innerText = team;
+  document.getElementById('rptUsed').innerText = globalRes.used + "억 원";
+  document.getElementById('rptSpace').innerText = globalRes.spaceTotal + "점";
+  document.getElementById('rptLife').innerText = globalRes.lifeTotal + "점";
+  
+  let tbody = document.querySelector('#rptTable tbody');
+  tbody.innerHTML = "";
+  globalRes.breakdown.forEach(d => {
+    tbody.innerHTML += `<tr><td>${d.name}</td><td>${d.budget}억</td><td>${d.sP}</td><td>${d.lP}</td><td>${d.eval}</td></tr>`;
+  });
+
+  document.getElementById('appBody').style.display = 'none';
+  document.getElementById('finalReport').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function backToEdit() {
+  document.getElementById('finalReport').style.display = 'none';
+  document.getElementById('appBody').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+/**
+ * 프론트엔드 최적화 분석 로직 알고리즘
+ */
+function calculateResult(budgetData, customItems) {
+  var baseMeta = {
+    "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
+    "신소재 안테나 개발": { sW: 1.5, lW: 1.5, info: "통신 기술 혁신" },
+    "원격 적외선 온도계 투자": { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
+    "로켓 추진체 연료 개량": { sW: 2.3, lW: 0.4, info: "우주 도달 범위 확장" },
+    "우주인 생명유지 장치": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
+  };
+
+  var details = [];
+  var tSpace = 0, tLife = 0, tUsed = 0;
+
+  for (var name in baseMeta) {
+    var budget = Number(budgetData[name]) || 0;
+    if (budget > 0) {
+      var meta = baseMeta[name];
+      var sP = budget * meta.sW;
+      var lP = budget * meta.lW;
+      tSpace += sP; tLife += lP; tUsed += budget;
+
+      var scaleText = budget > 30 ? "대규모 투자를 통해 혁신적인 변화를 이끌었습니다." : "기초적인 수준의 연구를 지원합니다.";
+      details.push({ name: name, budget: budget, sP: sP.toFixed(1), lP: lP.toFixed(1), eval: meta.info + " 분야에 " + scaleText });
+    }
+  }
+
+  if (customItems) {
+    customItems.forEach(function(c) {
+      var n = c.name.trim();
+      var b = Number(c.budget) || 0;
+      if (n && b > 0) {
+        var sW = 1.0, lW = 1.0, evalStr = "";
+        
+        if (/(화성|달|행성|우주선|탐사|로켓|광물|망원경)/.test(n)) {
+          sW = 2.5; lW = 0.5;
+          evalStr = "우주의 물리적 한계를 극복하려는 시도입니다. 탐사 성공률에 결정적입니다.";
+        } else if (/(의료|병원|식량|농업|물|정수|재난|구조|필터|치료|생물)/.test(n)) {
+          sW = 0.5; lW = 2.5;
+          evalStr = "인류의 생존과 직결된 기술입니다. 일상 과학 기여도가 매우 높게 평가됩니다.";
+        } else if (/(AI|로봇|반도체|컴퓨터|안전|센서|통신)/.test(n)) {
+          sW = 1.6; lW = 1.6;
+          evalStr = "첨단 공학의 융합입니다. 우주 제어 능력과 일상 산업 경쟁력을 동시에 확보합니다.";
+        } else {
+          evalStr = "새로운 분야에 대한 독창적인 접근입니다. 기술적 파급력을 기대할 수 있습니다.";
+        }
+
+        var sP = b * sW;
+        var lP = b * lW;
+        tSpace += sP; tLife += lP; tUsed += b;
+        details.push({ name: "[학생 제안] " + n, budget: b, sP: sP.toFixed(1), lP: lP.toFixed(1), eval: evalStr });
+      }
+    });
+  }
+
+  return { success: true, spaceTotal: Math.round(tSpace), lifeTotal: Math.round(tLife), used: tUsed, breakdown: details };
+}
+</script>
+</body>
+</html>
