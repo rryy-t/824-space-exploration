@@ -1,64 +1,131 @@
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-      .setTitle('🚀 [수행평가 완결형] 우주 탐사 시뮬레이터')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-}
-
-function calculateResult(budgetData, customItems) {
-  var baseMeta = {
-    "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
-    "신소재 안테나 개발": { sW: 1.5, lW: 1.5, info: "통신 기술 혁신" },
-    "원격 적외선 온도계 투자": { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
-    "로켓 추진체 연료 개량": { sW: 2.3, lW: 0.4, info: "우주 도달 범위 확장" },
-    "우주인 생명유지 장치": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
-  };
-
-  var details = [];
-  var tSpace = 0, tLife = 0, tUsed = 0;
-
-  // 1. 기본 항목 평가 및 예산 규모별 피드백
-  for (var name in baseMeta) {
-    var budget = Number(budgetData[name]) || 0;
-    if (budget > 0) {
-      var meta = baseMeta[name];
-      var sP = budget * meta.sW;
-      var lP = budget * meta.lW;
-      tSpace += sP; tLife += lP; tUsed += budget;
-
-      var scaleText = budget > 30 ? "대규모 투자를 통해 혁신적인 변화를 이끌었습니다." : "기초적인 수준의 연구를 지원합니다.";
-      details.push({ name: name, budget: budget, sP: sP.toFixed(1), lP: lP.toFixed(1), eval: meta.info + " 분야에 " + scaleText });
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 [수행평가 완결형] 우주 탐사 시뮬레이터</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #161b26;
+      --text-color: #f3f4f6;
+      --accent-color: #3b82f6;
+      --accent-success: #10b981;
+      --border-color: #374151;
     }
-  }
-
-  // 2. 주관식 항목 개별 맞춤 평가 (Keyword & Budget 분석)
-  if (customItems) {
-    customItems.forEach(function(c) {
-      var n = c.name.trim();
-      var b = Number(c.budget) || 0;
-      if (n && b > 0) {
-        var sW = 1.0, lW = 1.0, evalStr = "";
-        
-        if (/(화성|달|행성|우주선|탐사|로켓|광물|망원경)/.test(n)) {
-          sW = 2.5; lW = 0.5;
-          evalStr = "우주의 물리적 한계를 극복하려는 시도입니다. 탐사 성공률에 결정적입니다.";
-        } else if (/(의료|병원|식량|농업|물|정수|재난|구조|필터|치료|생물)/.test(n)) {
-          sW = 0.5; lW = 2.5;
-          evalStr = "인류의 생존과 직결된 기술입니다. 일상 과학 기여도가 매우 높게 평가됩니다.";
-        } else if (/(AI|로봇|반도체|컴퓨터|안전|센서|통신)/.test(n)) {
-          sW = 1.6; lW = 1.6;
-          evalStr = "첨단 공학의 융합입니다. 우주 제어 능력과 일상 산업 경쟁력을 동시에 확보합니다.";
-        } else {
-          evalStr = "새로운 분야에 대한 독창적인 접근입니다. 기술적 파급력을 기대할 수 있습니다.";
-        }
-
-        var sP = b * sW;
-        var lP = b * lW;
-        tSpace += sP; tLife += lP; tUsed += b;
-        details.push({ name: "[학생 제안] " + n, budget: b, sP: sP.toFixed(1), lP: lP.toFixed(1), eval: evalStr });
-      }
-    });
-  }
-
-  return { success: true, spaceTotal: Math.round(tSpace), lifeTotal: Math.round(tLife), used: tUsed, breakdown: details };
-}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+    }
+    h1 {
+      text-align: center;
+      color: #ffffff;
+      font-size: 1.8rem;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+    h2 {
+      font-size: 1.2rem;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 10px;
+      margin-top: 25px;
+      margin-bottom: 15px;
+    }
+    .input-group {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 15px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    label {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+    input[type="number"], input[type="text"] {
+      background: #1f2937;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-color);
+      border: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #2563eb;
+    }
+    .btn-add {
+      background: #4b5563;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      margin-top: 5px;
+      width: auto;
+    }
+    .btn-add:hover {
+      background: #374151;
+    }
+    .result-box {
+      margin-top: 30px;
+      padding: 20px;
+      background: #1f2937;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: none;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: #111827;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+    }
+    .summary-card .value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--accent-success);
+      margin-top: 5px;
+    }
+    .summary-card .value.used {
+      color: #f59e0b;
+    }
+    .detail-item {
+      background: #
