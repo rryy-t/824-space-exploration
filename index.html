@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팽창하는 우주 시뮬레이터</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0b0b16;
+      color: #ffffff;
+      font-family: 'Malgun Gothic', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin: 10px 0 5px 0;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    #info-text {
+      color: #9cdcfe;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      text-align: center;
+      min-height: 20px;
+    }
+    #main-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+      margin-bottom: 20px;
+    }
+    #canvas-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1 1 500px;
+      max-width: 600px;
+    }
+    #canvas-container {
+      position: relative;
+      border: 2px solid #3f3f46;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      width: 100%;
+      background-color: #000005;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    #control-panel {
+      margin-top: 15px;
+      background-color: #1e1e2e;
+      padding: 15px 20px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .slider-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.85rem;
+      color: #a6adc8;
+      font-weight: bold;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: #4f46e5;
+      cursor: pointer;
+      margin: 8px 0;
+    }
+    .main-btn {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .main-btn:hover {
+      background-color: #4338ca;
+    }
+    .main-btn:active {
+      transform: scale(0.98);
+    }
+    button#reset-btn {
+      background-color: #4b5563;
+    }
+    button#reset-btn:hover {
+      background-color: #374151;
+    }
+
+    /* 퀴즈 섹션 */
+    #quiz-section {
+      background-color: #181825;
+      border: 2px solid #4f46e5;
+      border-radius: 10px;
+      padding: 20px;
+      flex: 1 1 350px;
+      max-width: 450px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-self: flex-start;
+    }
+    #quiz-section h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #f43f5e;
+      border-bottom: 1px solid #3f3f46;
+      padding-bottom: 8px;
+    }
+    .quiz-option {
+      background-color: #313244;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+      border: 2px solid transparent;
+    }
+    .quiz-option:hover {
+      background-color: #45475a;
+    }
+    .quiz-option.selected {
+      background-color: #3b4261;
+      border-color: #89b4fa;
+    }
+    #quiz-feedback {
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 60px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .text-correct { color: #4ade80; background-color: rgba(74, 222, 128, 0.1); }
+    .text-incorrect { color: #f87171; background-color: rgba(248, 113, 113, 0.1); }
+    
+    /* 버튼 레이아웃 구조 세분화 */
+    .quiz-action-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 10px;
+    }
+    .quiz-action-btn:active { transform: scale(0.99); }
+    
+    #submit-quiz-btn { background-color: #4f46e5; }
+    #submit-quiz-btn:hover { background-color: #4338ca; }
+    
+    .quiz-nav-container {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-top: 5px;
+    }
+    .quiz-nav-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s;
+      display: none;
+      text-align: center;
+    }
+    #next-quiz-btn { background-color: #10b981; }
+    #next-quiz-btn:hover { background-color: #059669; }
+    #prev-quiz-btn { background-color: #f59e0b; }
+    #prev-quiz-btn:hover { background-color: #d97706; }
+    #restart-quiz-btn { background-color: #6366f1; }
+    #restart-quiz-btn:hover { background-color: #4f46e5; }
+  </style>
+</head>
+<body>
+
+  <h1>🌌 내가 중심이 되는 우주 팽창 시뮬레이터</h1>
+  <div id="info-text">먼저 관찰할 기준 은하를 클릭한 후 슬라이더를 움직여보세요!</div>
+
+  <div id="main-container">
+    <div id="canvas-section">
+      <div id="canvas-container">
+        <canvas id="universeCanvas" width="600" height="400"></canvas>
+      </div>
+      <div id="control-panel">
+        <div class="slider-wrapper">
+          <div class="slider-labels">
+            <span>◀ 처음 상태 (과거 우주)</span>
+            <span>현재 우주 (팽창) ▶</span>
+          </div>
+          <input type="range" id="expansionSlider" min="1" max="2.5" step="0.01" value="1">
+        </div>
+        <button id="reset-btn" class="main-btn" onclick="resetSimulation()">시뮬레이션 초기화</button>
+      </div>
+    </div>
+
+    <div id="quiz-section">
+      <h2>🧠 우주 팽창 개념 확인 퀴즈</h2>
+      <div id="quiz-question-num" style="font-size: 0.9rem; color: #a6adc8; font-weight: bold;">문제 1 / 2</div>
+      <p id="quiz-question" style="font-weight: bold; font-size: 1.1rem; margin: 15px 0; line-height: 1.4;"></p>
+      
+      <div id="quiz-options"></div>
+      
+      <button id="submit-quiz-btn" class="quiz-action-btn" onclick="processSubmission()">정답 확인하기</button>
+      
+      <div class="quiz-nav-container">
+          <button id="prev-quiz-btn" class="quiz-nav-btn" onclick="loadPrevQuiz()">⬅️ 이전 문제로</button>
+          <button id="next-quiz-btn" class="quiz-nav-btn" onclick="loadNextQuiz()">다음 문제로 ➡️</button>
+          <button id="restart-quiz-btn" class="quiz-nav-btn" onclick="restartQuiz()">다시 풀기 🔄</button>
+      </div>
+
+      <div id="quiz-feedback"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- [1] 시뮬레이션 로직 ---
+    const canvas = document.getElementById('universeCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('expansionSlider');
+    const infoText = document.getElementById('info-text');
+
+    const initialGalaxies = [
+      { id: 1, name: "우리은하", x: 300, y: 200, color: "#ffdd67", size: 12 },
+      { id: 2, name: "A 은하", x: 180, y: 100, color: "#a78bfa", size: 8 },
+      { id: 3, name: "B 은하", x: 450, y: 130, color: "#f43f5e", size: 7 },
+      { id: 4, name: "C 은하", x: 220, y: 300, color: "#38bdf8", size: 9 },
+      { id: 5, name: "D 은하", x: 420, y: 310, color: "#4ade80", size: 8 },
+      { id: 6, name: "E 은하", x: 100, y: 220, color: "#fb923c", size: 6 },
+      { id: 7, name: "F 은하", x: 520, y: 240, color: "#f472b6", size: 6 }
+    ];
+
+    let galaxies = [];
+    let selectedGalaxyId = null; 
+    let scale = 1;
+
+    function initSimulation() {
+      galaxies = JSON.parse(JSON.stringify(initialGalaxies));
+      selectedGalaxyId = null;
+      scale = 1;
+      slider.value = 1;
+      infoText.innerText = "먼저 관찰할 기준 은하를 클릭한 후 슬라이더를 움직여보세요!";
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      const baseGalaxy = galaxies.find(g => g.id === selectedGalaxyId);
+
+      galaxies.forEach(galaxy => {
+        let drawX, drawY;
+
+        if (baseGalaxy) {
+          drawX = baseGalaxy.x + (galaxy.x - baseGalaxy.x) * scale;
+          drawY = baseGalaxy.y + (galaxy.y - baseGalaxy.y) * scale;
+        } else {
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          drawX = centerX + (galaxy.x - centerX) * scale;
+          drawY = centerY + (galaxy.y - centerY) * scale;
+        }
+
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, galaxy.size, 0, Math.PI * 2);
+        ctx.fillStyle = galaxy.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = galaxy.color;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        if (galaxy.id === selectedGalaxyId) {
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, galaxy.size + 8, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(galaxy.name, drawX, drawY - galaxy.size - 8);
+      });
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+      ctx.lineWidth = 1;
+      const step = 40 * scale;
+      let startX = 0, startY = 0;
+
+      if (selectedGalaxyId) {
+        const base = galaxies.find(g => g.id === selectedGalaxyId);
+        startX = (base.x * scale) % step;
+        startY = (base.y * scale) % step;
+      }
+
+      for (let x = startX; x < canvas.width + step; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = startY; y < canvas.height + step; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+    }
+
+    canvas.addEventListener('click', function(event) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      const clickX = (event.clientX - rect.left) * scaleX;
+      const clickY = (event.clientY - rect.top) * scaleY;
+      
+      const baseGalaxy = galaxies.find(g => g.id === selectedGalaxyId);
+      let clickedGalaxy = null;
+      let minDistance = 100;
+
+      galaxies.forEach(galaxy => {
+        let currentX, currentY;
+        if (baseGalaxy) {
+          currentX = baseGalaxy.x + (galaxy.x - baseGalaxy.x) * scale;
+          currentY = baseGalaxy.y + (galaxy.y - baseGalaxy.y) * scale;
+        } else {
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          currentX = centerX + (galaxy.x - centerX) * scale;
+          currentY = centerY + (galaxy.y - centerY) * scale;
+        }
+
+        const distance = Math.sqrt((clickX - currentX) ** 2 + (clickY - currentY) ** 2);
+        if (distance < galaxy.size + 20 && distance < minDistance) {
+          clickedGalaxy = galaxy;
+          minDistance = distance;
+        }
+      });
+
+      if (clickedGalaxy) {
+        selectedGalaxyId = clickedGalaxy.id;
+        infoText.innerHTML = `현재 <strong>[${clickedGalaxy.name}]</strong> 관찰 중! 우주 크기를 키워보세요.`;
+        draw();
+      }
+    });
+
+    slider.addEventListener('input', function() {
+      scale = parseFloat(this.value);
+      draw();
+    });
+
+    function resetSimulation() {
+      initSimulation();
+    }
+
+
+    // --- [2] 퀴즈 시스템 로직 (버튼 순서 및 채점 방식 커스텀) ---
+    const quizData = [
+      {
+        question: "여러분이 다른 은하들을 선택해서 우주를 팽창시켰을 때 관찰한 사실로 옳은 것은 무엇인가요?",
+        options: [
+          "우리은하를 고를 때만 다른 은하들이 멀어졌다.",
+          "어떤 은하를 기준으로 선택하든 주변 은하들은 나로부터 전부 멀어졌다.",
+          "우주의 한가운데에 고정된 절대적인 '우주의 중심'이 존재했다."
+        ],
+        answer: 1,
+        hint: "시뮬레이터에서 'A 은하'나 'E 은하'를 누르고 우주를 키웠을 때 주변 은하들이 어떻게 움직였는지 떠올려 보세요!"
+      },
+      {
+        question: "기준 은하를 두고 우주를 팽창시킬 때, 은하들의 '멀어지는 속도'에 대한 설명으로 옳은 것은?",
+        options: [
+          "처음부터 기준 은하와 멀리 떨어져 있던 은하일수록 더 빠르게 멀어진다.",
+          "가까이 있던 은하가 멀리 있던 은하보다 더 눈에 띄게 빠르게 멀어진다.",
+          "모든 은하는 거리와 상관없이 완벽하게 똑같은 속도로 멀어진다."
+        ],
+        answer: 0,
+        hint: "슬라이더를 오른쪽으로 끝까지 밀었을 때, 아주 멀리 있던 은하들이 화면 밖으로 얼마나 빨리 사라졌는지 확인해 보세요!"
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let selectedOptionIndex = null;
+
+    function loadQuiz(index) {
+      currentQuizIndex = index;
+      selectedOptionIndex = null;
+      const quiz = quizData[index];
+      
+      document.getElementById('quiz-question-num').innerText = `문제 ${index + 1} / ${quizData.length}`;
+      document.getElementById('quiz-question').innerText = quiz.question;
+      
+      const optionsContainer = document.getElementById('quiz-options');
+      optionsContainer.innerHTML = '';
+      
+      quiz.options.forEach((option, i) => {
+        const optDiv = document.createElement('div');
+        optDiv.className = 'quiz-option';
+        optDiv.id = `opt-${i}`;
+        optDiv.innerText = `${i + 1}. ${option}`;
+        optDiv.onclick = () => selectOption(i);
+        optionsContainer.appendChild(optDiv);
+      });
+      
+      // 피드백 알림창 및 버튼 초기화
+      document.getElementById('quiz-feedback').innerHTML = '';
+      document.getElementById('quiz-feedback').className = '';
+      document.getElementById('submit-quiz-btn').style.display = 'block'; // 정답확인 활성화
+      hideAllNavButtons();
+    }
+
+    // 보기 단순 선택 기능 (채점 보류)
+    function selectOption(index) {
+      selectedOptionIndex = index;
+      const options = document.getElementsByClassName('quiz-option');
+      for (let i = 0; i < options.length; i++) {
+        options[i].classList.remove('selected');
+      }
+      document.getElementById(`opt-${index}`).classList.add('selected');
+    }
+
+    // [정답 확인하기] 버튼을 눌렀을 때 실행되는 실제 채점 로직
+    function processSubmission() {
+      if (selectedOptionIndex === null) {
+        alert("보기를 먼저 선택해 주세요!");
+        return;
+      }
+
+      const quiz = quizData[currentQuizIndex];
+      const feedbackDiv = document.getElementById('quiz-feedback');
+      
+      if (selectedOptionIndex === quiz.answer) {
+        feedbackDiv.className = 'text-correct';
+        document.getElementById('submit-quiz-btn').style.display = 'none'; // 정답 확인 완료 후 숨김
+        
+        if (currentQuizIndex === 0) {
+          feedbackDiv.innerHTML = "🎉 정답입니다!<br>어느 은하에서 보더라도 모두 자기가 중심인 것처럼 보이기 때문에, 실제 우주 팽창의 '특별한 중심'은 존재하지 않습니다.";
+          document.getElementById('next-quiz-btn').style.display = 'block'; // 다음 버튼 노출
+        } else {
+          feedbackDiv.innerHTML = "🎉 정답입니다!<br>거리가 멀수록 우주 공간이 늘어나는 효과도 누적되므로 멀리 있는 은하일수록 더 빠르게 후퇴합니다 (교과서 301쪽 실험 결과).";
+          document.getElementById('prev-quiz-btn').style.display = 'block';   // 이전 버튼 노출
+          document.getElementById('restart-quiz-btn').style.display = 'block'; // 다시풀기 노출
+        }
+      } else {
+        feedbackDiv.className = 'text-incorrect';
+        feedbackDiv.innerHTML = `❌ 다시 생각해 볼까요?<br><span style="color:#f2cdcd; font-size:0.9rem; font-weight:normal;">💡 힌트: ${quiz.hint}</span>`;
+      }
+    }
+
+    function hideAllNavButtons() {
+        document.getElementById('prev-quiz-btn').style.display = 'none';
+        document.getElementById('next-quiz-btn').style.display = 'none';
+        document.getElementById('restart-quiz-btn').style.display = 'none';
+    }
+
+    function loadNextQuiz() {
+        loadQuiz(currentQuizIndex + 1);
+    }
+
+    function loadPrevQuiz() {
+        loadQuiz(currentQuizIndex - 1);
+    }
+
+    function restartQuiz() {
+        loadQuiz(0);
+    }
+
+    // 최초 로드 실행
+    initSimulation();
+    loadQuiz(0);
+  </script>
+</body>
+</html>
