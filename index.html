@@ -128,4 +128,245 @@
       color: #f59e0b;
     }
     .detail-item {
-      background: #
+      background: #111827;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--accent-color);
+    }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+    .detail-eval {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+    .custom-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🚀 [수행평가 완결형] 우주 탐사 시뮬레이터</h1>
+
+  <h2>1. 국가 기본 연구 과제 투자 (억원)</h2>
+  <div id="base-items-container">
+    <div class="input-group">
+      <label>태양광 전지 연구</label>
+      <input type="number" class="base-input" data-name="태양광 전지 연구" placeholder="0" min="0">
+    </div>
+    <div class="input-group">
+      <label>신소재 안테나 개발</label>
+      <input type="number" class="base-input" data-name="신소재 안테나 개발" placeholder="0" min="0">
+    </div>
+    <div class="input-group">
+      <label>원격 적외선 온도계 투자</label>
+      <input type="number" class="base-input" data-name="원격 적외선 온도계 투자" placeholder="0" min="0">
+    </div>
+    <div class="input-group">
+      <label>로켓 추진체 연료 개량</label>
+      <input type="number" class="base-input" data-name="로켓 추진체 연료 개량" placeholder="0" min="0">
+    </div>
+    <div class="input-group">
+      <label>우주인 생명유지 장치</label>
+      <input type="number" class="base-input" data-name="우주인 생명유지 장치" placeholder="0" min="0">
+    </div>
+  </div>
+
+  <h2>2. 학생 독창적 제안 과제</h2>
+  <div id="custom-items-container">
+    </div>
+  <button type="button" class="btn btn-add" onclick="addCustomRow()">+ 제안 과제 추가하기</button>
+
+  <button type="button" class="btn" onclick="runSimulation()">우주 탐사 시뮬레이션 가동 🚀</button>
+
+  <div class="result-box" id="result-box">
+    <h2>📊 시뮬레이션 결과 리포트</h2>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div>총 집행 예산</div>
+        <div class="value used" id="res-used">0억</div>
+      </div>
+      <div class="summary-card">
+        <div>우주 개척 지수</div>
+        <div class="value" id="res-space">0점</div>
+      </div>
+      <div class="summary-card">
+        <div>인류 공헌 지수</div>
+        <div class="value" id="res-life">0점</div>
+      </div>
+    </div>
+
+    <h3>🔍 세부 항목 평가 및 피드백</h3>
+    <div id="result-details"></div>
+  </div>
+</div>
+
+<script>
+  // 주관식 입력 폼을 동적으로 추가하는 함수
+  function addCustomRow() {
+    const container = document.getElementById('custom-items-container');
+    const div = document.createElement('div');
+    div.className = 'custom-row';
+    div.innerHTML = `
+      <input type="text" class="custom-name" placeholder="예: 화성 정수 필터 개발, AI 로봇 탐사">
+      <input type="number" class="custom-budget" placeholder="예산(억)" min="0">
+    `;
+    container.appendChild(div);
+  }
+
+  // 처음에 주관식 입력 한 줄 기본 생성
+  addCustomRow();
+
+  // 사용자가 버튼을 눌렀을 때 데이터를 수집하여 계산 함수 호출
+  function runSimulation() {
+    // 1. 기본 항목 데이터 수집
+    const budgetData = {};
+    const baseInputs = document.querySelectorAll('.base-input');
+    baseInputs.forEach(input => {
+      const name = input.getAttribute('data-name');
+      budgetData[name] = Number(input.value) || 0;
+    });
+
+    // 2. 주관식 제안 항목 데이터 수집
+    const customItems = [];
+    const rows = document.querySelectorAll('.custom-row');
+    rows.forEach(row => {
+      const nameElement = row.querySelector('.custom-name');
+      const budgetElement = row.querySelector('.custom-budget');
+      if (nameElement && budgetElement) {
+        const name = nameElement.value;
+        const budget = budgetElement.value;
+        if (name.trim() !== "" && budget > 0) {
+          customItems.push({ name: name, budget: Number(budget) });
+        }
+      }
+    });
+
+    // 3. 비즈니스 로직 실행
+    const result = calculateResult(budgetData, customItems);
+
+    // 4. 결과를 화면에 UI로 반영
+    if (result.success) {
+      document.getElementById('res-used').innerText = result.used + " 억";
+      document.getElementById('res-space').innerText = result.spaceTotal + " 점";
+      document.getElementById('res-life').innerText = result.lifeTotal + " 점";
+
+      const detailsDiv = document.getElementById('result-details');
+      detailsDiv.innerHTML = ""; // 기존 내역 초기화
+
+      result.breakdown.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'detail-item';
+        itemEl.innerHTML = `
+          <div class="detail-header">
+            <span>${item.name} (${item.budget}억 투자)</span>
+            <span>우주 +${item.sP} / 인류 +${item.lP}</span>
+          </div>
+          <div class="detail-eval">💡 ${item.eval}</div>
+        `;
+        detailsDiv.appendChild(itemEl);
+      });
+
+      // 결과 영역 표시
+      document.getElementById('result-box').style.display = 'block';
+      document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  /**
+   * 제공해주신 원본 핵심 연산 로직 (웹 브라우저 환경에 맞게 최적화됨)
+   */
+  function calculateResult(budgetData, customItems) {
+    const baseMeta = {
+      "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
+      "신소재 안테나 개발": { sW: 1.5, lW: 1.5, info: "통신 기술 혁신" },
+      "원격 적외선 온도계 투자": { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
+      "로켓 추진체 연료 개량": { sW: 2.3, lW: 0.4, info: "우주 도달 범위 확장" },
+      "우주인 생명유지 장치": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
+    };
+
+    let details = [];
+    let tSpace = 0, tLife = 0, tUsed = 0;
+
+    // 1. 기본 항목 평가 및 예산 규모별 피드백
+    for (let name in baseMeta) {
+      if (budgetData && budgetData[name]) {
+        let budget = Number(budgetData[name]) || 0;
+        if (budget > 0) {
+          let meta = baseMeta[name];
+          let sP = budget * meta.sW;
+          let lP = budget * meta.lW;
+          tSpace += sP; tLife += lP; tUsed += budget;
+
+          let scaleText = budget > 30 ? "대규모 투자를 통해 혁신적인 변화를 이끌었습니다." : "기초적인 수준의 연구를 지원합니다.";
+          details.push({ 
+            name: name, 
+            budget: budget, 
+            sP: sP.toFixed(1), 
+            lP: lP.toFixed(1), 
+            eval: meta.info + " 분야에 " + scaleText 
+          });
+        }
+      }
+    }
+
+    // 2. 주관식 항목 개별 맞춤 평가 (Keyword & Budget 분석)
+    if (customItems && Array.isArray(customItems)) {
+      customItems.forEach(function(c) {
+        if (!c.name) return;
+        let n = c.name.trim();
+        let b = Number(c.budget) || 0;
+        
+        if (n && b > 0) {
+          let sW = 1.0, lW = 1.0, evalStr = "";
+          
+          if (/(화성|달|행성|우주선|탐사|로켓|광물|망원경)/.test(n)) {
+            sW = 2.5; lW = 0.5;
+            evalStr = "우주의 물리적 한계를 극복하려는 시도입니다. 탐사 성공률에 결정적입니다.";
+          } else if (/(의료|병원|식량|농업|물|정수|재난|구조|필터|치료|생물)/.test(n)) {
+            sW = 0.5; lW = 2.5;
+            evalStr = "인류의 생존과 직결된 기술입니다. 일상 과학 기여도가 매우 높게 평가됩니다.";
+          } else if (/(AI|로봇|반도체|컴퓨터|안전|센서|통신)/.test(n)) {
+            sW = 1.6; lW = 1.6;
+            evalStr = "첨단 공학의 융합입니다. 우주 제어 능력과 일상 산업 경쟁력을 동시에 확보합니다.";
+          } else {
+            evalStr = "새로운 분야에 대한 독창적인 접근입니다. 기술적 파급력을 기대할 수 있습니다.";
+          }
+
+          let sP = b * sW;
+          let lP = b * lW;
+          tSpace += sP; tLife += lP; tUsed += b;
+          details.push({ 
+            name: "[학생 제안] " + n, 
+            budget: b, 
+            sP: sP.toFixed(1), 
+            lP: lP.toFixed(1), 
+            eval: evalStr 
+          });
+        }
+      });
+    }
+
+    return { 
+      success: true, 
+      spaceTotal: Math.round(tSpace), 
+      lifeTotal: Math.round(tLife), 
+      used: tUsed, 
+      breakdown: details 
+    };
+  }
+</script>
+
+</body>
+</html>
