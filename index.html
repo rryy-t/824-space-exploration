@@ -21,7 +21,7 @@
 <body>
 
 <div id="appBody" class="main-container no-print">
-  <h3 class="text-center fw-bold mb-4">🛸 우주 탐사 예산 위원회 시뮬레이션</h3>
+  <h3 class="text-center fw-bold mb-4" id="mainTitle">🛸 우주 탐사 예산 위원회 시뮬레이션</h3>
 
   <div class="budget-header d-flex justify-content-between align-items-center">
     <div class="flex-grow-1 me-3">
@@ -75,7 +75,10 @@
       <p class="mb-0">"우리 모둠은 '미지의 우주 개척(우주 점수)'과 '현재 인류의 삶 개선(일상 점수)' 중 무엇을 더 우선했나요? 분석 결과에 나타난 점수의 차이를 보고, 우리 모둠의 투자 철학을 친구들과 공유해 보세요."</p>
     </div>
 
-    <button class="btn btn-warning w-100 py-3 fw-bold fs-5" onclick="finalize()">✅ 최종 의사결정서 작성하기</button>
+    <div class="d-flex gap-3 mt-4">
+      <button type="button" class="btn btn-secondary py-3 fw-bold fs-5 w-25" onclick="scrollToEdit()">← 다시 배분하기</button>
+      <button type="button" class="btn btn-warning py-3 fw-bold fs-5 flex-grow-1" onclick="finalize()">✅ 최종 의사결정서 작성하기</button>
+    </div>
   </div>
 </div>
 
@@ -109,7 +112,6 @@
 <script>
 let globalRes = null;
 
-// 항목 추가 기능 정상화 고정
 function addCustom() {
   let id = Date.now();
   document.getElementById('customArea').insertAdjacentHTML('beforeend', `
@@ -120,7 +122,6 @@ function addCustom() {
     </div>`);
 }
 
-// 기본 항목과 주관식 항목 모두를 안전하게 취합하여 실시간 예산 차감 계산
 function refreshBudget() {
   let t = 0; 
   document.querySelectorAll('.b-input').forEach(i => {
@@ -132,21 +133,23 @@ function refreshBudget() {
   document.getElementById('progressBar').style.width = Math.min(Math.max(t, 0), 100) + '%';
 }
 
-// 전체 분석 기능 정상화 고정
+// 결과 분석창에서 '다시 배분하기' 클릭 시 상단 입력 폼으로 부드럽게 스크롤링
+function scrollToEdit() {
+  document.getElementById('mainTitle').scrollIntoView({ behavior: 'smooth' });
+}
+
 function analyze() {
   let t = 0; 
   document.querySelectorAll('.b-input').forEach(i => t += Number(i.value) || 0);
   if(t > 100) return alert("예산을 초과했습니다!");
   if(t < 100 && !confirm("예산이 남았습니다. 진행하시겠습니까?")) return;
 
-  // 1. 기본 필수 과제 데이터 수집 (data-name 속성 기준)
   let baseData = {}; 
   document.querySelectorAll('.base-input').forEach(input => {
     let name = input.getAttribute('data-name');
     if (name) baseData[name] = input.value;
   });
 
-  // 2. 창의적 계획 항목 데이터 수집 (.custom-n, .custom-b 기반)
   let customItems = []; 
   document.querySelectorAll('#customArea .item-card').forEach(row => {
     let n = row.querySelector('.custom-n').value;
@@ -154,7 +157,6 @@ function analyze() {
     if(n && b) customItems.push({name: n, budget: b});
   });
 
-  // 3. 브라우저 로컬 데이터 수식 연산 작동
   let res = calculateResult(baseData, customItems);
   
   globalRes = res;
@@ -199,9 +201,6 @@ function backToEdit() {
   window.scrollTo(0,0);
 }
 
-/**
- * 프론트엔드 최적화 분석 로직 알고리즘
- */
 function calculateResult(budgetData, customItems) {
   var baseMeta = {
     "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
