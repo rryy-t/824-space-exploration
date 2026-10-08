@@ -37,7 +37,7 @@
     <h6 class="fw-bold mb-3">📦 정부 지정 필수 투자 분야</h6>
     <div id="baseList"></div>
     <script>
-      const items = ["태양광 전지 연구", "신소재 안테나 개발", "원격 적외선 온도계 투자", "로켓 추진체 연료 개량", "우주인 생명유지 장치"];
+      const items = ["태양광 전지 연구", "신소재 안테나 개발", "원격 적외선 온도계 개발",  "로켓 추진체 연료 개량", "우주인 생명유지 장치 연구"];
       items.forEach(i => {
         document.getElementById('baseList').innerHTML += `
           <div class="item-card row align-items-center">
@@ -205,9 +205,9 @@ function calculateResult(budgetData, customItems) {
   var baseMeta = {
     "태양광 전지 연구": { sW: 1.2, lW: 1.8, info: "에너지 효율 개선" },
     "신소재 안테나 개발": { sW: 1.5, lW: 1.5, info: "통신 기술 혁신" },
-    "원격 적외선 온도계 투자": { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
+    "원격 적외선 온도계 개발: { sW: 1.0, lW: 1.9, info: "의료 및 정밀 측정" },
     "로켓 추진체 연료 개량": { sW: 2.3, lW: 0.4, info: "우주 도달 범위 확장" },
-    "우주인 생명유지 장치": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
+    "우주인 생명유지 장치 연구": { sW: 1.9, lW: 1.2, info: "장기 탐사 및 생존 기술" }
   };
 
   var details = [];
